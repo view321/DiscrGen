@@ -2,3 +2,5 @@ build
 build-wasm
 build-emscripten
 build-wasm-cache
+TODO.md
+README.md

@@ -1,5 +1,7 @@
 #include <stdexcept>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "boolean_formula.h"
 #include "ftxui/component/component.hpp"
@@ -16,33 +18,18 @@ void TryParsing(BooleanFormula& formula,
                 std::vector<std::vector<std::string>>& table_values) {
   try {
     formula.Parse(input);
-    int vars_count;
-    bool** out_table;
-    formula.BuildTable(vars_count, out_table);
+    const TruthTable truth_table = formula.BuildTruthTable();
     output = "Формула пропарсена";
-    std::vector<std::string> header;
-    for(auto& val : formula.vars)
-    {
-      header.emplace_back(val);
-    }
-    header.emplace_back("Значение");
+
     table_values.clear();
-    int rows_count = (1 << vars_count);
-    table_values.emplace_back(header);
-    for(int i = 0; i < rows_count; i++)
-    {
+    table_values.emplace_back(truth_table.headers);
+    for (const auto& values : truth_table.rows) {
       std::vector<std::string> row;
-      for(int j = 0; j < vars_count + 1; j++)
-      {
-        row.emplace_back(out_table[i][j] == 1 ? "1" : "0");
+      row.reserve(values.size());
+      for (const bool value : values) {
+        row.emplace_back(value ? "1" : "0");
       }
-      table_values.emplace_back(row);
-    }
-    if (out_table != nullptr) {
-      for(int i = 0; i < rows_count; i++) {
-        delete[] out_table[i];
-      }
-      delete[] out_table;
+      table_values.emplace_back(std::move(row));
     }
     success = true;
   } catch (const std::runtime_error& error) {

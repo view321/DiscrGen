@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.22)
+cmake_minimum_required(VERSION 3.22)
 
 project(DiscrGen
   LANGUAGES CXX
@@ -38,19 +38,23 @@ target_link_libraries(DiscrGen
   PRIVATE ftxui::component
 )
 
+if(EMSCRIPTEN)
+  target_link_options(DiscrGen PRIVATE
+    "-sASYNCIFY=1"
+    "-sALLOW_MEMORY_GROWTH=1"
+    "-sEXIT_RUNTIME=0"
+  )
+
+  set_target_properties(DiscrGen PROPERTIES
+    OUTPUT_NAME index
+    SUFFIX ".html"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/docs"
+  )
+endif()
+
 enable_testing()
 
 add_executable(boolean_formula_tests tests/boolean_formula_tests.cpp)
 target_link_libraries(boolean_formula_tests PRIVATE discrgen_core)
 
 add_test(NAME boolean_formula_tests COMMAND boolean_formula_tests)
-
-#if (EMSCRIPTEN)
-#  string(APPEND CMAKE_CXX_FLAGS " -s USE_PTHREADS")
-#  string(APPEND CMAKE_EXE_LINKER_FLAGS " -s ASYNCIFY")
-#  string(APPEND CMAKE_EXE_LINKER_FLAGS " -s PROXY_TO_PTHREAD")
-#
-#  foreach(file "index.html" "run_webassembly.py")
-#    configure_file("src/${file}" ${file})
-#  endforeach(file)
-#endif()
